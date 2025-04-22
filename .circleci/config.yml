@@ -297,4 +297,8 @@ workflows:
       # - cloudfront-update:
       #     requires: [smoke-test]
       # - cleanup:
+<<<<<<< HEAD
       #     requires: [cloudfront-update]
+=======
+      #     requires: [cloudfront-update]
+>>>>>>> 99f285d6f8b90f881a79a56d4e980af693c0641a
