@@ -108,7 +108,7 @@ jobs:
       - restore_cache:
           keys: [frontend-deps]
       - run:
-          name: Front-end security scan
+          name: Front-end  scan
           command: |
             cd frontend
             npm install
@@ -117,7 +117,7 @@ jobs:
     docker:
       - image: cimg/node:13.8.0
     steps:
-      steps:
+      
       - checkout
       - restore_cache:
           keys: [backend-deps]
