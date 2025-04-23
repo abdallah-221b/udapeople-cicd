@@ -10,13 +10,12 @@ commands:
           channel: cicd_pipline
           template: basic_fail_1
   notify_on_success:
-    docker:
-      - image: cimg/base
-  steps:
-    - slack/notify:
-        event: pass
-        channel: cicd_pipline
-        template: success_tagged_deployment_1         
+
+    steps:
+      - slack/notify:
+          event: pass
+          channel: cicd_pipline
+          template: success_tagged_deployment_1         
 # commands:
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
