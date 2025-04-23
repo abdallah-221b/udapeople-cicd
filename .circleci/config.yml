@@ -112,10 +112,11 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm audit
-            npm update some-package
-            npm install some-package@latest
             npm audit fix --force --audit-level=critical
+            npm audit fix --force --audit-level=critical
+            npm audit fix --force --audit-level=high
+            npm audit fix --force --audit-level=high
+            npm audit fix --force --audit-level=medium
             npm audit --audit-level=critical
   scan-backend:
     docker:
