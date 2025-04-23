@@ -112,8 +112,15 @@ jobs:
           command: |
             cd frontend
             npm install
+            npm update direct-dependencys --depth 0
             npm audit fix --force --audit-level=critical
             npm audit fix --force --audit-level=critical
+            npm audit fix --force --audit-level=critical
+            npm audit fix --force --audit-level=critical
+            npm audit fix --force --audit-level=critical
+            npm audit fix --force --audit-level=high
+            npm audit fix --force --audit-level=high
+            npm audit fix --force --audit-level=high
             npm audit fix --force --audit-level=high
             npm audit fix --force --audit-level=high
             npm audit fix --force --audit-level=medium
