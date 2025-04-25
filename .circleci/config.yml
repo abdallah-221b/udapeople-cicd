@@ -1,21 +1,43 @@
 version: 2.1
-orbs:
-  slack: circleci/slack@4.9.3
-
 commands:
-  notify_on_failure:
+  install_awscli:
+    description: Install AWS CLI v2
     steps:
-      - slack/notify:
-          event: fail
-          channel: cicd_pipline
-          template: basic_fail_1
-  notify_on_success:
+      - run:
+          name: Install AWS CLI v2
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
 
+  install_ansible:
+    description: Install Ansible v2
     steps:
-      - slack/notify:
-          event: pass
-          channel: cicd_pipline
-          template: success_tagged_deployment_1         
+      - run:
+          name: Install Ansible v2
+          command: |
+            sudo apt update
+            sudo apt install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible
+
+# orbs:
+#   slack: circleci/slack@4.9.3
+
+# commands:
+#   notify_on_failure:
+#     steps:
+#       - slack/notify:
+#           event: fail
+#           channel: cicd_pipline
+#           template: basic_fail_1
+#   notify_on_success:
+
+#     steps:
+#       - slack/notify:
+#           event: pass
+#           channel: cicd_pipline
+#           template: success_tagged_deployment_1         
 # commands:
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -66,7 +88,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-deps
-      - notify_on_failure
+      # - notify_on_failure
   build-backend:
     docker:
       - image: cimg/node:13.8.0
@@ -83,7 +105,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-deps
-      - notify_on_failure
+      # - notify_on_failure
 
   test-frontend:
     docker:
@@ -99,7 +121,7 @@ jobs:
             cd frontend
             npm install
             npm test
-      - notify_on_failure
+      # - notify_on_failure
    
                 
   test-backend:
@@ -115,7 +137,7 @@ jobs:
             cd backend
             npm install
             npm test
-      - notify_on_failure
+      # - notify_on_failure
 
 
             
@@ -132,7 +154,7 @@ jobs:
             cd frontend
             npm install
             npm audit --audit-level=critical || true
-      - notify_on_failure
+      # - notify_on_failure
   scan-backend:
     docker:
       - image: cimg/node:13.8.0
@@ -149,40 +171,47 @@ jobs:
             npm audit fix --force --audit-level=critical
             npm audit fix --force --audit-level=critical
             npm audit --audit-level=critical
-      - notify_on_failure
-#   deploy-infrastructure:
-#     docker:
-#       # Docker image here that supports AWS CLI
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Ensure back-end infrastructure exists
-#           command: |
-#             aws cloudformation deploy \
-#               --template-file .circleci/files/backend.yml \
-#               #--tags project=your-tag \
-#               # --stack-name "your back-end stack name with workflow id" \
-#               # --parameter-overrides ID="your workflow id"  
-#               exit 1
-#       - run:
-#           name: Ensure front-end infrastructure exist
-#           command: |
-#             aws cloudformation deploy \
-#               --template-file .circleci/files/frontend.yml \
-#               #--tags project=your-tag \
-#               # --stack-name "your front-end stack name with workflow id" \
-#               # --parameter-overrides ID="your workflow id"  
-#               exit 1
-#       - run:
-#           name: Add back-end ip to ansible inventory
-#           command: |
-#             # Your code here
-#             exit 1
-#       - persist_to_workspace:
-#           root: ~/
-#           paths:
-#             - project/.circleci/ansible/inventory.txt
-#       # Here's where you will add some code to rollback on failure      
+      # - notify_on_failure
+  deploy-infrastructure:
+    docker:
+      - image :cimg/base:stable
+    steps:
+      - checkout
+      - install_awscli
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople\
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=your-tag \
+              --stack-name "udapeople-frontnd-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="your workflow id"  
+              
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+
+            echo $BACKEND_PUBLIC_IP >> .circleci/ansible/inventory.txt
+
+            cat .circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure      
 
 #   configure-infrastructure:
 #     docker:
@@ -331,11 +360,11 @@ workflows:
           requires: [build-frontend]
  
 
-      # - deploy-infrastructure:
-      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      #     filters:
-      #       branches:
-      #         only: [test-feature-branch]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
       # - configure-infrastructure:
       #     requires: [deploy-infrastructure]
       # - run-migrations:
