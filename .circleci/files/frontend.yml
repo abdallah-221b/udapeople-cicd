@@ -9,8 +9,8 @@ Parameters:
 Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
-    ObjectOwnership: BucketOwnerEnforced
     Properties:
+      ObjectOwnership: BucketOwnerEnforced
       BucketName: !Sub "udapeople-${ID}"
       # AccessControl: PublicRead
       WebsiteConfiguration:
