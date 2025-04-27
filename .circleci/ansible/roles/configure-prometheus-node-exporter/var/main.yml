@@ -1,0 +1,17 @@
+.circleci/
+└── ansible/
+    ├── roles/
+    │   ├── configure-prometheus-node-exporter/
+    │   │   ├── files/          <-- existing
+    │   │   │   └── ...
+    │   │   ├── tasks/          <-- existing
+    │   │   │   └── main.yml    <-- tasks file (should NOT have vars: block)
+    │   │   └── vars/           <-- CREATE THIS FOLDER
+    │   │       └── main.yml    <-- CREATE THIS FILE with the variables
+    │   └── configure-server/
+    │       └── tasks/
+    │           └── main.yml
+    ├── configure-server.yml
+    ├── deploy-backend.yml
+    ├── inventory.txt
+    └── ...
