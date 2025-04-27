@@ -29,10 +29,6 @@
 
 ### ai code :
 ---
----
-# ----- TASKS START HERE -----
-
-# Task 1: Download the archive ON THE TARGET using curl
 - name: "Download node exporter archive on target using curl"
   ansible.builtin.shell:
     cmd: "curl -L -s -S -o {{ node_exporter_archive_path }} {{ node_exporter_download_url }}"
