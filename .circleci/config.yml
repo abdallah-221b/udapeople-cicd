@@ -197,7 +197,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=your-tag \
-              --stack-name "udapeople-frontnd-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
               
       - run:
@@ -237,7 +237,7 @@ jobs:
        - image: cimg/base:stable
      steps:
       - checkout
-      - install_ansible
+      - install_ansible 
       - add_ssh_keys:
           fingerprints: ["SHA256:FJogcncZoAfN0hgvqhqDgAiiOafEii9G+HsAStU+Ok4"]
       - attach_workspace: # Attach the workspace persisted by deploy-infrastructure
