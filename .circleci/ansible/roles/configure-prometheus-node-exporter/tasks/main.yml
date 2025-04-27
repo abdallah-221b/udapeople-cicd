@@ -33,7 +33,10 @@
 # vars have been moved to a separate file
 
 # ----- TASKS START HERE -----
-
+# Add this debug task:
+- name: "Debug role variables"
+  ansible.builtin.debug:
+    msg: "Archive path is {{ node_exporter_archive_path | default('VARIABLE NOT DEFINED') }}"
 # Task 1: Download the archive ON THE TARGET using curl
 - name: "Download node exporter archive on target using curl"
   ansible.builtin.shell:
