@@ -22,6 +22,8 @@ commands:
             sudo apt install ansible
 
 
+ 
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -31,17 +33,25 @@ commands:
     steps:
       - run:
           name: Destroy environments
+          # Consider if 'when: on_fail' is truly what you want for the destroy logic
+          # If you always want to run this destroy step when the command is called, remove 'when: on_fail'
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.Workflow_ID >>
-            aws s3 rm s3://udapeople-<<parameters.Workflow_ID>> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.Workflow_ID >>
+            echo "Attempting to destroy environment: << parameters.Workflow_ID >>" # Added for clarity
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.Workflow_ID >> || echo "Failed to delete backend stack or stack does not exist."
+            aws s3 rm s3://udapeople-<<parameters.Workflow_ID>> --recursive || echo "Failed to remove S3 bucket or bucket does not exist."
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.Workflow_ID >> || echo "Failed to delete frontend stack or stack does not exist."
+      # --- REMOVE THE LINE BELOW ---
+      # - destroy-environment
+
+      # --- Consider if this persist step really belongs in the destroy command ---
+      # Usually, you persist data needed by *later* jobs. Destroy is often the *last* thing.
       - persist_to_workspace:
           root: ~/
           paths:
            - project/.circleci/ansible/inventory.txt
 
-      - destroy-environment
+       
 #   revert-migrations:
 #     description: Revert the last migration if successfully run in the current workflow.
 #     parameters:
