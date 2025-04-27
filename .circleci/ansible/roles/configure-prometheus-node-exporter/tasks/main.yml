@@ -53,12 +53,30 @@
     - download_result.rc != 0
     - "'already exists' not in download_result.stderr|default('')"
   become: false
+- name: Check contents of /tmp after unarchive
+  ansible.builtin.command: ls -la /tmp
+  register: ls_tmp_result
+  become: false # Reading /tmp often doesn't need root
 
+- name: Display /tmp contents
+  ansible.builtin.debug:
+    var: ls_tmp_result.stdout_lines
+########### DEBUGGING TASKS ###########
+- name: Check contents of expected extract path ({{ node_exporter_extract_path }})
+  ansible.builtin.command: ls -la {{ node_exporter_extract_path }}
+  register: ls_extract_path_result
+  become: false
+  ignore_errors: true # Ignore if the directory doesn't exist
+
+- name: Display expected extract path contents
+  ansible.builtin.debug:
+    var: ls_extract_path_result.stdout_lines
+  when: ls_extract_path_result.rc == 0 # Only show if command succeeded
 
 # Task 3: Move the binary to the final location
 - name: "Move node_exporter binary to {{ node_exporter_binary_path }}"
   ansible.builtin.copy:
-    src: "/tmp/node_exporter" # New path assuming direct extraction to /tmp
+    src: "{{ node_exporter_extract_path }}/node_exporter" # Revert to this path
     dest: "{{ node_exporter_binary_path }}"
     remote_src: yes
     mode: '0755'
@@ -92,4 +110,3 @@
     # Add "{{ node_exporter_extract_path }}" to the loop ONLY if you find it does create the directory
   become: false # Removing files from /tmp may not need root, adjust if necessary
 
-  
