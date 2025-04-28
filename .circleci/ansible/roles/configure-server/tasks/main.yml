@@ -1,39 +1,17 @@
 ---
-# This is a Play definition
-- name: Configure server with Node.js
-  hosts: your_hosts # <<-- IMPORTANT: Replace 'your_hosts' with your target group or hostname (e.g., web or 51.20.115.246)
-  become: true # <<-- Apply become to the whole play if most tasks need it
+- name: "Add Node.js from Nodesource"
+  become: true
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
 
-  # Variables for this Play go here, indented 2 spaces under the Play definition
-  vars:
-    nodejs_major_version: "20" # Set this to "18" for Node.js 18, or "20" for Node.js 20
+- name: "Install Node.js 13"
+  become: true
+  apt:
+    name: ["nodejs"]
+    state: latest
+    update_cache: yes
 
-  # The list of Tasks goes here, indented 2 spaces under the Play definition
-  block:
-    - name: Download NodeSource GPG key
-      ansible.builtin.get_url:
-        url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-        dest: /etc/apt/keyrings/nodesource.gpg
-        mode: '0644'
-        force: true
-
-    - name: Add NodeSource APT repository
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_{{ nodejs_major_version }}.x nodistro main"
-        filename: nodesource
-        state: present
-        update_cache: yes
-      # become: true  <-- Inherited from the play level unless overridden
-
-    - name: Install Node.js v{{ nodejs_major_version }}
-      ansible.builtin.apt:
-        name: nodejs
-        state: latest
-        update_cache: yes
-      # become: true  <-- Inherited from the play level unless overridden
-
-    - name: Install PM2 Globally
-      ansible.builtin.npm:
-        name: pm2
-        global: yes
-        state: latest
+- name: "Install PM2 Globally"
+  npm:
+    name: pm2
+    global: yes
