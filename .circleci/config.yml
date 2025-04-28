@@ -249,27 +249,27 @@ jobs:
   #          cat inventory.txt
   #          ansible-playbook -i inventory.txt configure-server.yml
   #     - destroy-environment
-  # configure-infrastructure:
-  #    docker:
-  #      - image: cimg/base:stable
-  #    steps:
-  #     - checkout
-  #     - install_ansible 
-  #     - add_ssh_keys:
-  #         fingerprints: ["SHA256:FJogcncZoAfN0hgvqhqDgAiiOafEii9G+HsAStU+Ok4"]
-  #     - attach_workspace: # Attach the workspace persisted by deploy-infrastructure
-  #         at: ~/
-  #     - run:
-  #         name: Configure Server
-  #         command: |
-  #          # Assuming inventory.txt is now at ~/project/.circleci/ansible/inventory.txt due to attach_workspace
-  #          cd ~/project/.circleci/ansible # Adjust path if needed based on persist/attach
-  #          cat inventory.txt
-  #          ansible-playbook -i inventory.txt configure-server.yml
-  #     - destroy-environment: # Call destroy, maybe on failure of configuration
-  #         # Again, the 'when: on_fail' inside the command controls the AWS calls
-  #         Workflow_ID: ${CIRCLE_WORKFLOW_ID:0:7}
-  #     # Here's where you will add some code to rollback on failure      
+  configure-infrastructure:
+     docker:
+       - image: cimg/base:stable
+     steps:
+      - checkout
+      - install_ansible 
+      - add_ssh_keys:
+          fingerprints: ["SHA256:FJogcncZoAfN0hgvqhqDgAiiOafEii9G+HsAStU+Ok4"]
+      - attach_workspace: # Attach the workspace persisted by deploy-infrastructure
+          at: ~/
+      - run:
+          name: Configure Server
+          command: |
+           # Assuming inventory.txt is now at ~/project/.circleci/ansible/inventory.txt due to attach_workspace
+           cd ~/project/.circleci/ansible # Adjust path if needed based on persist/attach
+           cat inventory.txt
+           ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment: # Call destroy, maybe on failure of configuration
+          # Again, the 'when: on_fail' inside the command controls the AWS calls
+          Workflow_ID: ${CIRCLE_WORKFLOW_ID:0:7}
+      # Here's where you will add some code to rollback on failure      
 
   run-migrations:
     docker:
@@ -409,8 +409,8 @@ workflows:
           filters:
             branches:
               only: [master]
-      # - configure-infrastructure:
-      #     requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
       # - deploy-frontend:
