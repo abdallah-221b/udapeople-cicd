@@ -81,4 +81,4 @@
   loop:
     - "{{ node_exporter_archive_path }}"    # The .tar.gz file
     - "{{ node_exporter_extract_path }}"  # The extracted directory
-  become: false # May not need root for /tmp cleanup, adjust if needed
+  become: true # May not need root for /tmp cleanup, adjust if needed
