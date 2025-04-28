@@ -42,7 +42,7 @@
   ansible.builtin.unarchive:
     src: "{{ node_exporter_archive_path }}" # Source is the local file on the target
     dest: /tmp # Destination for extraction
-    remote_src: no # Indicate src is on the target
+    remote_src: yes # Indicate src is on the target
   become: true # Run unarchive as root to avoid permission issues <--- *** ADDED THIS ***
 
 # Task 3: Move the binary to the final location
