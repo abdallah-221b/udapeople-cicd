@@ -50,59 +50,33 @@ commands:
           root: ~/
           paths:
            - project/.circleci/ansible/inventory.txt
-########################
 
-
-
-       
-  # revert-migrations:
-  #   description: Revert database migrations
-  #   parameters:
-  #     Workflow_ID:
-  #       type: string
-  #       default: ${CIRCLE_WORKFLOW_ID:0:7}
-  #   steps:
-  #     - run:
-  #         name: Revert migrations
-  #         when: on_fail
-  #         command: |
-  #           SUCCESS=$(curl --insecure https://kvdb.io/${KVDB_BUCKET}/migration_<< parameters.Workflow_ID >>)
-  #           # Logic for reverting the database state
-  #           if (( $SUCCESS == 1 ));
-  #           then
-  #             cd ~/project/backend
-  #             npm install
-  #             npm run migration:revert
-  #           fi
-  # ai code :
-    # Ensure you have version: 2.1 at the top of your config.yml
-# version: 2.1
-revert-migrations:
-  description: Revert database migrations
-  parameters:
-    Workflow_ID:
-      type: string
-      default: ${CIRCLE_WORKFLOW_ID:0:7}
-      description: "The workflow ID (or relevant part) to check migration status against."
-  steps:
-    - run:
-        name: Revert migrations
-        when: on_fail
-        command: |
-          SUCCESS=$(curl -s --insecure "https://kvdb.io/${KVDB_BUCKET}/migration_<< parameters.Workflow_ID >>")
-          echo "Migration status check for << parameters.Workflow_ID >> returned: '$SUCCESS'"
-          if [[ "$SUCCESS" == "1" ]]; then
-            echo "Success status (1) received. Reverting migration..."
-            if cd ~/project/backend; then
-              npm install
-              npm run migration:revert
+  revert-migrations:
+    description: Revert database migrations
+    parameters:
+      Workflow_ID:
+        type: string
+        default: ${CIRCLE_WORKFLOW_ID:0:7}
+        description: "The workflow ID (or relevant part) to check migration status against."
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            SUCCESS=$(curl -s --insecure "https://kvdb.io/${KVDB_BUCKET}/migration_<< parameters.Workflow_ID >>")
+            echo "Migration status check for << parameters.Workflow_ID >> returned: '$SUCCESS'"
+            if [[ "$SUCCESS" == "1" ]]; then
+              echo "Success status (1) received. Reverting migration..."
+              if cd ~/project/backend; then
+                npm install
+                npm run migration:revert
+              else
+                echo "Error: Could not change directory to ~/project/backend"
+                exit 1
+              fi
             else
-              echo "Error: Could not change directory to ~/project/backend"
-              exit 1
+              echo "Revert not required or status check failed (Received: '$SUCCESS')."
             fi
-          else
-            echo "Revert not required or status check failed (Received: '$SUCCESS')."
-          fi
 
 # --- How to use this command in a job ---
 # jobs:
@@ -317,8 +291,8 @@ jobs:
             then
               curl https://kvdb.io/${KVDB_BUCKET}/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
-      - destroy-environment
-      - revert-migrations    
+      # - destroy-environment
+      # - revert-migrations    
 
 #   deploy-frontend:
 #     docker:
